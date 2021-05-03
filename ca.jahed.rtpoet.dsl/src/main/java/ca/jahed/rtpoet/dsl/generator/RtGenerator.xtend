@@ -19,6 +19,5 @@ import org.eclipse.xtext.generator.IGeneratorContext
 class RtGenerator extends AbstractGenerator {
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-	    new PapyrusRTModelGenerator().doGenerate(resource, fsa)
 	}
 }
