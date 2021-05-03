@@ -1,0 +1,46 @@
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath 'org.xtext:xtext-gradle-plugin:2.0.8'
+	}
+}
+
+subprojects {
+	ext.xtextVersion = '2.25.0'
+	repositories {
+		mavenCentral()
+
+		maven {
+			name = "GitHubPackages"
+			url = uri("https://maven.pkg.github.com/kjahed/rtpoet")
+			credentials {
+				username = project.findProperty("gpr.user") ?: System.getenv("GH_USER")
+				password = project.findProperty("gpr.key") ?: System.getenv("GH_TOKEN")
+			}
+		}
+	}
+	
+	apply plugin: 'java'
+	dependencies {
+		compile platform("org.eclipse.xtext:xtext-dev-bom:${xtextVersion}")
+
+		implementation 'ca.jahed.rtpoet:rtpoet:1.0-SNAPSHOT'
+		implementation 'ca.jahed.rtpoet:rtpoet-papyrusrt:1.0-SNAPSHOT'
+	}
+
+	apply plugin: 'org.xtext.xtend'
+	apply from: "${rootDir}/gradle/source-layout.gradle"
+	apply plugin: 'eclipse'
+	
+	group = 'ca.jahed.rtpoet.dsl'
+	version = '1.0.0-SNAPSHOT'
+	
+	sourceCompatibility = '1.8'
+	targetCompatibility = '1.8'
+	
+	configurations.all {
+		exclude group: 'asm'
+	}
+}

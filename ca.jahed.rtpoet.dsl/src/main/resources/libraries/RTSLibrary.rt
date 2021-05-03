@@ -1,0 +1,11 @@
+model RTSLibrary {
+    protocol Timing {
+        in message timeout
+    }
+    protocol Frame {}
+    protocol Log {}
+
+    class Message {}
+    class CapsuleId {}
+    class TimerId {}
+}

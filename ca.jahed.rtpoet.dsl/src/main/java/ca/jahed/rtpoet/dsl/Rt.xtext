@@ -1,0 +1,343 @@
+grammar ca.jahed.rtpoet.dsl.Rt with org.eclipse.xtext.common.Terminals
+
+generate rt "http://www.jahed.ca/rtpoet/dsl/Rt"
+
+Model:
+    'model'
+    name=ID
+    '{'
+        imports+=Import*
+
+        (
+            capsules+=Capsule
+            | classes+=Class
+            | enumerations+=Enumeration
+            | artifacts+=Artifact
+            | protocols+=Protocol
+            | packages+=Package
+        )*
+    '}'
+    ;
+
+Import:
+    "import" importURI=STRING
+;
+
+Package:
+    'package'
+    name=ID
+    '{'
+        (
+            capsules+=Capsule
+            | classes+=Class
+            | enumerations+=Enumeration
+            | artifacts+=Artifact
+            | protocols+=Protocol
+            | packages+=Package
+        )*
+    '}'
+;
+
+Capsule:
+    (top?='top')?
+    'capsule'
+    name=ID
+    '{'
+
+        (
+            attributes+=Attribute
+            | operations+=Operation
+            | parts+=Part
+            | ports+=Port
+            | connectors+=Connector
+        )*
+
+        (stateMachine=StateMachine)?
+    '}'
+;
+
+Class:
+    'class'
+    name=ID
+    '{'
+        (
+            attributes+=Attribute
+            | operations+=Operation
+        )*
+    '}'
+;
+
+Connector:
+    'connect' ((part1=[Part] '.')? port1=[Port]) 'to' ((part2=[Part] '.')? port2=[Port])
+;
+
+
+SignalKind:
+    'in' | 'out' | 'inout'
+;
+
+Signal:
+    kind=SignalKind
+    'message'
+    name=ID
+    ('(' (parameters+=Parameter)* ')')?
+;
+
+Protocol:
+    'protocol'
+    name=ID
+    '{'
+        (signals+=Signal)*
+    '}'
+;
+
+Enumeration:
+    'enum'
+    name=ID
+    '{'
+        (literals+=STRING ("," literals+=STRING)*)?
+    '}'
+;
+
+Artifact:
+    'artifact'
+    name=ID
+    '{'
+        ('file' file=STRING)?
+    '}'
+;
+
+
+PortKind:
+    'external' | 'internal' | 'relay' | 'sap' | 'spp'
+;
+
+PortRegistrationKind:
+    'auto' | 'app' | 'autolock'
+;
+
+Port:
+    (kind=PortKind)?
+    (registration=PortRegistrationKind)?
+    'port'
+    name=ID
+    ':' (conjugate?='~')? type=[Protocol|FQN]
+    ('[' upperBound=LiteralInteger ']')?
+    ('registration' registrationOverride=STRING)?
+;
+
+CapsuleKind:
+    'fixed' | 'optional' | 'plugin'
+;
+
+Part:
+    (kind=CapsuleKind)?
+    'part'
+    name=ID
+    ':' type=[Capsule|FQN]
+    ('[' upperBound=LiteralInteger ']')?
+;
+
+Attribute:
+    (visibility=VisibilityKind)?
+    (static?='static')?
+    (readOnly?='readonly')?
+    'attribute'
+    name=ID
+    ':' type=Type
+    ('[' upperBound=LiteralInteger ']')?
+    ('=' default=ValueSpecification)?
+;
+
+Parameter:
+    name=ID
+    ':' type=Type
+    ('[' upperBound=LiteralInteger ']')?
+;
+
+Return:
+	type=Type
+	('[' upperBound=LiteralInteger ']')?;
+
+Operation returns Operation:
+    (visibility=VisibilityKind)?
+    (static?='static')?
+    (abstract?='abstract')?
+    (query?='query')?
+    'operation'
+    name=ID
+    ('(' (parameters+=Parameter)* ')')?
+    (':' return=Return)?
+    ('{' body=ActionCode '}')?
+;
+
+VisibilityKind:
+    'public' | 'protected' | 'private'
+;
+
+ValueSpecification:
+	Literal
+;
+
+Literal:
+	LiteralNull | LiteralBoolean | LiteralInteger | LiteralReal | LiteralString | LiteralUnlimited
+;
+
+LiteralNull:
+	'null'
+;
+
+LiteralBoolean:
+	value=BOOL
+;
+
+LiteralInteger:
+	value=INT
+;
+
+LiteralReal:
+	value=REAL
+;
+
+LiteralString:
+	value=STRING
+;
+
+LiteralUnlimitedNatural:
+	LiteralNatural | LiteralUnlimited
+;
+
+LiteralNatural:
+	value=INT
+;
+
+LiteralUnlimited:
+	value=ANY
+;
+
+Type:
+    (PrimitiveType | typeRef=[UserType|FQN])
+;
+
+PrimitiveType:
+    name=('int' | 'string' | 'boolean' | 'float')
+;
+
+
+UserType:
+    Class | Enumeration
+;
+
+StateMachine:
+    'statemachine'
+    '{'
+        (substates+=State)*
+        (transitions+=Transition)*
+    '}'
+;
+
+State:
+    CompositeState | SimpleState | PseudoState;
+
+fragment StateCommonFragment:
+    ('entry' entryAction=ActionCode)?
+    ('exit' exitAction=ActionCode)?
+;
+
+SimpleState:
+    'simple'? 'state'
+    name=ID
+    ('{' StateCommonFragment  '}')?
+;
+
+fragment CompositeStateBody:
+    '{'
+        StateCommonFragment
+        (substates+=State)*
+        (transitions+=Transition)*
+    '}'
+;
+
+CompositeState:
+    'composite state'
+    name=ID
+    (CompositeStateBody)?
+;
+
+PseudoState:
+    InitialPoint | DeepHistory | ChoicePoint | JunctionPoint | EntryPoint | ExitPoint
+;
+
+InitialPoint:
+    'initial' name=ID
+;
+
+DeepHistory:
+    'history' name=ID
+;
+
+ChoicePoint:
+    'choice' name=ID
+;
+
+JunctionPoint:
+    'junction' name=ID
+;
+
+EntryPoint:
+    'entry' name=ID
+;
+
+ExitPoint:
+    'exit' name=ID
+;
+
+Transition :
+    'transition' '{'
+    'from' source=[State]
+    'to' target=[State]
+    (
+        'triggers'
+        (
+            triggers+=Trigger
+        |
+            '{' triggers+=Trigger ("," triggers+=Trigger)* '}'
+        )
+    )?
+    (guard=TransitionGuard)?
+    (actionChain=TransitionAction)?
+    '}'
+;
+
+Trigger:
+    'from'
+    ports+=[Port] ("," ports+=[Port])*
+    'on'
+    signal=[Signal]
+;
+
+TransitionGuard:
+    'guard'
+    (body=ActionCode)?
+;
+
+TransitionAction:
+    'action'
+    (body=ActionCode)?
+;
+
+ActionCode:
+	ACTION_CODE_SOURCE
+;
+
+FQN hidden():
+    ID('.' ID)*
+;
+
+terminal ACTION_CODE_SOURCE:
+	'`' -> '`'
+;
+
+terminal BOOL: 'true' | 'false';
+terminal REAL: ('-'|'+')?('0'..'9')+('.' ('0'..'9')+);
+terminal ANY: '*';

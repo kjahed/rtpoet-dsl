@@ -1,0 +1,2 @@
+include 'ca.jahed.rtpoet.dsl'
+include 'ca.jahed.rtpoet.dsl.ide'
