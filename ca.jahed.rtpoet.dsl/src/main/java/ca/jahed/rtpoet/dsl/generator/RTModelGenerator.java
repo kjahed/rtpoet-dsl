@@ -8,12 +8,15 @@ import ca.jahed.rtpoet.dsl.rt.Package;
 import ca.jahed.rtpoet.rtmodel.*;
 import ca.jahed.rtpoet.rtmodel.builders.*;
 import ca.jahed.rtpoet.rtmodel.builders.sm.*;
+import ca.jahed.rtpoet.rtmodel.cppproperties.RTAttributeProperties;
+import ca.jahed.rtpoet.rtmodel.cppproperties.RTParameterProperties;
 import ca.jahed.rtpoet.rtmodel.sm.*;
 import ca.jahed.rtpoet.rtmodel.types.RTType;
 import ca.jahed.rtpoet.rtmodel.types.primitivetype.RTBoolean;
 import ca.jahed.rtpoet.rtmodel.types.primitivetype.RTFloat;
 import ca.jahed.rtpoet.rtmodel.types.primitivetype.RTInteger;
 import ca.jahed.rtpoet.rtmodel.types.primitivetype.RTString;
+import ca.jahed.rtpoet.rtmodel.values.*;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 
@@ -62,6 +65,8 @@ public class RTModelGenerator {
             result = cache.getOrDefault(eObj, generateReturn((Return) eObj));
         else if(eObj instanceof Type)
             result = cache.getOrDefault(eObj, generateType((Type) eObj));
+        else if(eObj instanceof Value)
+            result = cache.getOrDefault(eObj, generateValue((Value) eObj));
         else if(eObj instanceof Connector)
             result = cache.getOrDefault(eObj, generateConnector((Connector) eObj));
         else if(eObj instanceof StateMachine)
@@ -148,11 +153,16 @@ public class RTModelGenerator {
     private RTAttribute generateAttribute(Attribute attribute) {
         RTAttributeBuilder builder = RTAttribute.builder(attribute.getName(), (RTType) generate(attribute.getType()));
         if(attribute.getUpperBound() != null) builder.replication(attribute.getUpperBound().getValue());
+        if(attribute.getDefault() != null) builder.value((RTValue) generate(attribute.getDefault()));
 
         if(attribute.getVisibility() != null) {
             if(attribute.getVisibility().equals("public")) builder.publicVisibility();
             else if(attribute.getVisibility().equals("private")) builder.privateVisibility();
             else builder.protectedVisibility();
+        }
+
+        if(attribute.getType().getCustom() != null) {
+            builder.properties(RTAttributeProperties.builder().type(extractActionCode(attribute.getType().getCustom())));
         }
 
         return builder.build();
@@ -217,6 +227,11 @@ public class RTModelGenerator {
     private RTParameter generateParameter(Parameter parameter) {
         RTParameterBuilder builder = RTParameter.builder(parameter.getName(), (RTType) generate(parameter.getType()));
         if(parameter.getUpperBound() != null) builder.replication(parameter.getUpperBound().getValue());
+
+        if(parameter.getType().getCustom() != null) {
+            builder.properties(RTParameterProperties.builder().type(extractActionCode(parameter.getType().getCustom())));
+        }
+
         return builder.build();
     }
 
@@ -245,6 +260,23 @@ public class RTModelGenerator {
         }
 
         return RTInteger.INSTANCE;
+    }
+
+
+    private RTValue generateValue(Value value) {
+        if(value.getExpression() != null)
+            return new RTExpression(RTAction.builder(extractActionCode(value.getExpression())).build());
+        if(value instanceof LiteralInteger)
+            return new RTLiteralInteger(((LiteralInteger) value).getValue());
+        if(value instanceof LiteralBoolean)
+            return new RTLiteralBoolean(Boolean.parseBoolean(((LiteralBoolean) value).getValue()));
+        if(value instanceof LiteralReal)
+            return new RTLiteralReal(Double.parseDouble(((LiteralReal) value).getValue()));
+        if(value instanceof LiteralString)
+            return new RTLiteralString(((LiteralString) value).getValue());
+        if(value instanceof LiteralUnlimitedNatural)
+            return RTLiteralUnlimitedNatural.INSTANCE;
+        return RTLiteralNull.INSTANCE;
     }
 
     private RTConnector generateConnector(Connector connector) {

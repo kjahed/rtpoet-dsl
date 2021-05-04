@@ -146,7 +146,7 @@ Attribute:
     name=ID
     ':' type=Type
     ('[' upperBound=LiteralInteger ']')?
-    ('=' default=ValueSpecification)?
+    ('=' default=Value)?
 ;
 
 Parameter:
@@ -175,12 +175,12 @@ VisibilityKind:
     'public' | 'protected' | 'private'
 ;
 
-ValueSpecification:
-	Literal
+Value:
+	Literal | expression=ActionCode
 ;
 
 Literal:
-	LiteralNull | LiteralBoolean | LiteralInteger | LiteralReal | LiteralString | LiteralUnlimited
+	LiteralNull | LiteralBoolean | LiteralInteger | LiteralReal | LiteralString | LiteralUnlimitedNatural
 ;
 
 LiteralNull:
@@ -204,19 +204,11 @@ LiteralString:
 ;
 
 LiteralUnlimitedNatural:
-	LiteralNatural | LiteralUnlimited
-;
-
-LiteralNatural:
-	value=INT
-;
-
-LiteralUnlimited:
 	value=ANY
 ;
 
 Type:
-    (PrimitiveType | typeRef=[UserType|FQN])
+    (PrimitiveType | typeRef=[UserType|FQN] | custom=ActionCode)
 ;
 
 PrimitiveType:
