@@ -9,6 +9,7 @@ import ca.jahed.rtpoet.rtmodel.RTElement;
 import ca.jahed.rtpoet.rtmodel.rts.classes.RTCapsuleId;
 import ca.jahed.rtpoet.rtmodel.rts.classes.RTMessage;
 import ca.jahed.rtpoet.rtmodel.rts.classes.RTTimerId;
+import ca.jahed.rtpoet.rtmodel.rts.classes.RTTimespec;
 import ca.jahed.rtpoet.rtmodel.rts.protocols.RTFrameProtocol;
 import ca.jahed.rtpoet.rtmodel.rts.protocols.RTLogProtocol;
 import ca.jahed.rtpoet.rtmodel.rts.protocols.RTTimingProtocol;
@@ -69,6 +70,9 @@ public class RTSLibrary {
                     break;
                 case "TimerId":
                     rtsClasses.put(clazz, RTTimerId.INSTANCE);
+                    break;
+                case "Timespec":
+                    rtsClasses.put(clazz, RTTimespec.INSTANCE);
                     break;
             }
         }

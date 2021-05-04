@@ -8,4 +8,5 @@ model RTSLibrary {
     class Message {}
     class CapsuleId {}
     class TimerId {}
+    class Timespec {}
 }

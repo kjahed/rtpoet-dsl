@@ -80,7 +80,7 @@ Signal:
     kind=SignalKind
     'message'
     name=ID
-    ('(' (parameters+=Parameter)* ')')?
+    ('(' (parameters+=Parameter (',' parameters+=Parameter)*)? ')')?
 ;
 
 Protocol:
@@ -166,7 +166,7 @@ Operation returns Operation:
     (query?='query')?
     'operation'
     name=ID
-    ('(' (parameters+=Parameter)* ')')?
+    ('(' (parameters+=Parameter (',' parameters+=Parameter)*)? ')')?
     (':' return=Return)?
     ('{' body=ActionCode '}')?
 ;
@@ -220,7 +220,7 @@ Type:
 ;
 
 PrimitiveType:
-    name=('int' | 'string' | 'boolean' | 'float')
+    name=('int' | 'String' | 'boolean' | 'double')
 ;
 
 

@@ -83,7 +83,7 @@ public class RTModelGenerator {
         Optional<Capsule> topCapsule = model.getCapsules().stream().filter(Capsule::isTop).findFirst();
         RTModelBuilder builder = topCapsule.map(capsule ->
                 RTModel.builder(model.getName(), (RTCapsule) generate(capsule)))
-                .orElseGet(() -> RTModel.builder(model.getName(), null));
+                .orElseGet(() -> RTModel.builder(model.getName()));
 
         model.getPackages().forEach(pkg -> builder.pkg((RTPackage) generate(pkg)));
         model.getCapsules().forEach(capsule -> builder.capsule((RTCapsule) generate(capsule)));
@@ -236,9 +236,9 @@ public class RTModelGenerator {
 
         if(type instanceof PrimitiveType) {
             PrimitiveType pt = (PrimitiveType) type;
-            if(pt.getName().equals("string"))
+            if(pt.getName().equals("String"))
                 return RTString.INSTANCE;
-            if(pt.getName().equals("float"))
+            if(pt.getName().equals("double"))
                 return RTFloat.INSTANCE;
             if(pt.getName().equals("boolean"))
                 return RTBoolean.INSTANCE;
