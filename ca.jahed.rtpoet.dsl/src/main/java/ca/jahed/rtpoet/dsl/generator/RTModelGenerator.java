@@ -302,7 +302,7 @@ public class RTModelGenerator {
         RTTransitionBuilder builder = RTTransition.builder((RTGenericState) generate(transition.getSource()),
                 (RTGenericState) generate(transition.getTarget()));
         if(transition.getGuard() != null) builder.guard(extractActionCode(transition.getGuard().getBody()));
-        if(transition.getActionChain() != null) builder.guard(extractActionCode(transition.getActionChain().getBody()));
+        if(transition.getActionChain() != null) builder.action(extractActionCode(transition.getActionChain().getBody()));
         transition.getTriggers().forEach(trigger -> builder.trigger((RTTrigger) generate(trigger)));
         return builder.build();
     }
