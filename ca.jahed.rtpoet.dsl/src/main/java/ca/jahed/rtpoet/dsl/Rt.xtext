@@ -174,7 +174,7 @@ Operation returns Operation:
     name=ID
     ('(' (parameters+=Parameter (',' parameters+=Parameter)*)? ')')?
     (':' return=Return)?
-    ('{' body=ActionCode '}')?
+    ( body=ActionCode )?
 ;
 
 VisibilityKind:
@@ -299,7 +299,7 @@ Transition :
         (
             triggers+=Trigger
         |
-            '{' triggers+=Trigger ("," triggers+=Trigger)* '}'
+            '{' triggers+=Trigger (triggers+=Trigger)* '}'
         )
     )?
     (guard=TransitionGuard)?
