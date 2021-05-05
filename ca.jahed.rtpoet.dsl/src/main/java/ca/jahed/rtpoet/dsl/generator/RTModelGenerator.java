@@ -7,8 +7,12 @@ import ca.jahed.rtpoet.dsl.rt.Enumeration;
 import ca.jahed.rtpoet.dsl.rt.Package;
 import ca.jahed.rtpoet.rtmodel.*;
 import ca.jahed.rtpoet.rtmodel.builders.*;
+import ca.jahed.rtpoet.rtmodel.builders.cppproperties.RTCapsulePropertiesBuilder;
+import ca.jahed.rtpoet.rtmodel.builders.cppproperties.RTClassPropertiesBuilder;
 import ca.jahed.rtpoet.rtmodel.builders.sm.*;
 import ca.jahed.rtpoet.rtmodel.cppproperties.RTAttributeProperties;
+import ca.jahed.rtpoet.rtmodel.cppproperties.RTCapsuleProperties;
+import ca.jahed.rtpoet.rtmodel.cppproperties.RTClassProperties;
 import ca.jahed.rtpoet.rtmodel.cppproperties.RTParameterProperties;
 import ca.jahed.rtpoet.rtmodel.sm.*;
 import ca.jahed.rtpoet.rtmodel.types.RTType;
@@ -118,6 +122,16 @@ public class RTModelGenerator {
         capsule.getPorts().forEach(port -> builder.port((RTPort) generate(port)));
         capsule.getConnectors().forEach(connector -> builder.connector((RTConnector) generate(connector)));
         if(capsule.getStateMachine() != null) builder.statemachine((RTStateMachine) generate(capsule.getStateMachine()));
+
+        if(capsule.getCppProps() != null) {
+            RTCapsulePropertiesBuilder props = RTCapsuleProperties.builder();
+            if(capsule.getCppProps().getHeader() != null)
+                props.headerPreface(extractActionCode(capsule.getCppProps().getHeader()));
+            if(capsule.getCppProps().getImplementation() != null)
+                props.implementationPreface(extractActionCode(capsule.getCppProps().getImplementation()));
+            builder.properties(props);
+        }
+
         return builder.build();
     }
 
@@ -125,6 +139,16 @@ public class RTModelGenerator {
         RTClassBuilder builder = RTClass.builder(clazz.getName());
         clazz.getAttributes().forEach(attribute -> builder.attribute((RTAttribute) generate(attribute)));
         clazz.getOperations().forEach(operation -> builder.operation((RTOperation) generate(operation)));
+
+        if(clazz.getCppProps() != null) {
+            RTClassPropertiesBuilder props = RTClassProperties.builder();
+            if(clazz.getCppProps().getHeader() != null)
+                props.headerPreface(extractActionCode(clazz.getCppProps().getHeader()));
+            if(clazz.getCppProps().getImplementation() != null)
+                props.implementationPreface(extractActionCode(clazz.getCppProps().getImplementation()));
+            builder.properties(props);
+        }
+
         return builder.build();
     }
 

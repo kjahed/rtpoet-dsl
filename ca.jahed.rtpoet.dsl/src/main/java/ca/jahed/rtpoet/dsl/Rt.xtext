@@ -43,7 +43,7 @@ Capsule:
     'capsule'
     name=ID
     '{'
-
+        cppProps=ClassCppProps
         (
             attributes+=Attribute
             | operations+=Operation
@@ -60,11 +60,17 @@ Class:
     'class'
     name=ID
     '{'
+        cppProps=ClassCppProps
         (
             attributes+=Attribute
             | operations+=Operation
         )*
     '}'
+;
+
+ClassCppProps:
+    ('header preface' header=ActionCode)?
+    ('implementation preface' implementation=ActionCode)?
 ;
 
 Connector:
