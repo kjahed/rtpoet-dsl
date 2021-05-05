@@ -53,8 +53,11 @@ public class RtCommandService implements IExecutableCommandService {
                             ILanguageServerAccess.Context::getResource).get();
 
                     if("rt.prtgen".equals(params.getCommand())) return executeGeneratePapyrusRTModel(resource);
-                    else if("rt.cppgen".equals(params.getCommand())) return executeGenerateCppCode(resource);
                     else if("rt.jsongen".equals(params.getCommand())) return executeGenerateJson(resource);
+                    else if("rt.cppgen".equals(params.getCommand())) {
+                        JsonPrimitive genDevContainer = (JsonPrimitive) Iterables.getLast(params.getArguments(), false);
+                        return executeGenerateCppCode(resource, genDevContainer.getAsBoolean());
+                    }
                     else return "Generation Failed";
                 } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
@@ -73,15 +76,16 @@ public class RtCommandService implements IExecutableCommandService {
         return "Generation Failed";
     }
 
-    private String executeGenerateCppCode(Resource resource) {
+    private String executeGenerateCppCode(Resource resource, boolean genDevContainer) {
         RTModel model = (new RTModelGenerator()).doGenerate(resource);
         if(model == null) return "Error generating RTModel";
         if(model.getTop() == null) return "Top capsule not found";
 
         if(PapyrusRTCodeGenerator.generate(model, fsa.getOutputConfigurations()
                 .get(IFileSystemAccess.DEFAULT_OUTPUT).getOutputDirectory())) {
-            fsa.generateFile(".." + File.separator + ".devcontainer" + File.separator + "devcontainer.json",
-                    DevContainerGenerator.generate(model));
+            if(genDevContainer)
+                fsa.generateFile(".." + File.separator + ".devcontainer" + File.separator + "devcontainer.json",
+                        DevContainerGenerator.generate(model));
             return "Generation Successful";
         }
 
