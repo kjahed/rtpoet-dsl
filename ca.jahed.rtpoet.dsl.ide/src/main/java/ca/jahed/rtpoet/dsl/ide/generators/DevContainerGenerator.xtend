@@ -1,20 +1,14 @@
 package ca.jahed.rtpoet.dsl.ide.generator
 
-import ca.jahed.rtpoet.rtmodel.*;
-
 class DevContainerGenerator {
 
-	def static generate(RTModel model) {'''
+	def static generate() {'''
      {
-        "name": "C++",
-        "image": "kjahed/vscode-rtpoetdev",
+        "name": "C++ for UML-RT",
+        "image": "kjahed/vscode-rtpoetdev:latest",
         "remoteUser": "vscode",
-        "workspaceMount": "source=${localWorkspaceFolder}/src-gen/cpp/src,target=/workspace,type=bind,consistency=delegated",
+        "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
         "workspaceFolder": "/workspace",
-
-        "containerEnv": {
-            "TOP_NAME": "«model.top.capsule.name»"
-        },
 
         "runArgs": [
             "--cap-add=SYS_PTRACE",
@@ -25,13 +19,6 @@ class DevContainerGenerator {
         "settings": {
             "terminal.integrated.shell.linux": "/bin/zsh",
 
-            "makefile.configurations": [
-                {
-                    "name": "«model.top.capsule.name»",
-                    "makefilePath": "/workspace/Makefile«model.top.capsule.name».mk"
-                }
-            ],
-
             "C_Cpp.default.includePath": [
                 "/workspace/**",
                 "/umlrts/include/**"
@@ -40,13 +27,12 @@ class DevContainerGenerator {
             "C_Cpp.default.compilerPath": "/usr/bin/g++",
             "C_Cpp.default.cStandard": "gnu11",
             "C_Cpp.default.cppStandard": "gnu++11",
-            "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
-            "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools"
+            "C_Cpp.default.intelliSenseMode": "linux-gcc-x64"
         },
 
         "extensions": [
             "ms-vscode.cpptools",
-            "ms-vscode.makefile-tools"
+            "kjahed.rtpoet-vscode-extension"
         ]
 
         // Use 'forwardPorts' to make a list of ports inside the container available locally.
