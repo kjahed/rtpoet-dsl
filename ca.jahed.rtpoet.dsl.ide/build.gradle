@@ -6,8 +6,6 @@ dependencies {
 	compile project(':ca.jahed.rtpoet.dsl')
 	compile "org.eclipse.xtext:org.eclipse.xtext.ide:${xtextVersion}"
 	compile "org.eclipse.xtext:org.eclipse.xtext.xbase.ide:${xtextVersion}"
-
-	implementation 'com.google.code.gson:gson:2.8.6'
 }
 
 apply plugin: 'application'

@@ -1,10 +1,12 @@
-package ca.jahed.rtpoet.dsl;
+package ca.jahed.rtpoet.dsl.libraries;
 
 import ca.jahed.rtpoet.dsl.rt.Class;
 import ca.jahed.rtpoet.dsl.rt.Model;
 import ca.jahed.rtpoet.dsl.rt.Protocol;
 import ca.jahed.rtpoet.dsl.rt.Signal;
 import ca.jahed.rtpoet.dsl.scoping.RtImportUriGlobalScopeProvider;
+import ca.jahed.rtpoet.papyrusrt.rts.protocols.RTMQTTProtocol;
+import ca.jahed.rtpoet.papyrusrt.rts.protocols.RTTCPProtocol;
 import ca.jahed.rtpoet.rtmodel.RTElement;
 import ca.jahed.rtpoet.rtmodel.rts.classes.RTCapsuleId;
 import ca.jahed.rtpoet.rtmodel.rts.classes.RTMessage;
@@ -56,6 +58,36 @@ public class RTSLibrary {
 
                 case "Frame":
                     rtsProtocols.put(protocol, RTFrameProtocol.INSTANCE);
+                    break;
+
+                case "TCP":
+                    rtsProtocols.put(protocol, RTTCPProtocol.INSTANCE);
+                    for (Signal signal : protocol.getSignals()) {
+                        if ("received".equals(signal.getName())) {
+                            rtsSignals.put(signal, RTTCPProtocol.INSTANCE.received());
+                        } else if ("error".equals(signal.getName())) {
+                            rtsSignals.put(signal, RTTCPProtocol.INSTANCE.error());
+                        }  else if ("connected".equals(signal.getName())) {
+                            rtsSignals.put(signal, RTTCPProtocol.INSTANCE.connected());
+                        } else if ("disconnected".equals(signal.getName())) {
+                            rtsSignals.put(signal, RTTCPProtocol.INSTANCE.disconnected());
+                        }
+                    }
+                    break;
+
+                case "MQTT":
+                    rtsProtocols.put(protocol, RTMQTTProtocol.INSTANCE);
+                    for (Signal signal : protocol.getSignals()) {
+                        if ("received".equals(signal.getName())) {
+                            rtsSignals.put(signal, RTMQTTProtocol.INSTANCE.received());
+                        } else if ("error".equals(signal.getName())) {
+                            rtsSignals.put(signal, RTMQTTProtocol.INSTANCE.error());
+                        }  else if ("connected".equals(signal.getName())) {
+                            rtsSignals.put(signal, RTMQTTProtocol.INSTANCE.connected());
+                        } else if ("disconnected".equals(signal.getName())) {
+                            rtsSignals.put(signal, RTMQTTProtocol.INSTANCE.disconnected());
+                        }
+                    }
                     break;
             }
         }

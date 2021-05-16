@@ -5,6 +5,20 @@ model RTSLibrary {
     protocol Frame {}
     protocol Log {}
 
+    protocol TCP {
+        in message received
+        in message connected
+        in message disconnected
+        in message error
+    }
+
+    protocol MQTT {
+        in message received
+        in message connected
+        in message disconnected
+        in message error
+    }
+
     class Message {}
     class CapsuleId {}
     class TimerId {}

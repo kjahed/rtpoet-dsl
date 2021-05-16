@@ -6,11 +6,9 @@ import ca.jahed.rtpoet.dsl.ide.generator.DevContainerGenerator;
 import ca.jahed.rtpoet.generators.RTTextualModelGenerator;
 import ca.jahed.rtpoet.papyrusrt.PapyrusRTReader;
 import ca.jahed.rtpoet.papyrusrt.generators.CppCodeGenerator;
-import ca.jahed.rtpoet.papyrusrt.rts.PapyrusRTLibrary;
 import ca.jahed.rtpoet.rtmodel.RTModel;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
 import com.google.gson.JsonPrimitive;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -23,7 +21,6 @@ import org.eclipse.xtext.ide.server.commands.IExecutableCommandService;
 import org.eclipse.xtext.util.CancelIndicator;
 
 import java.io.File;
-import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -41,15 +38,13 @@ public class RtCommandService implements IExecutableCommandService {
         fsa = fsaProvider.get();
         fsa.setOutputConfigurations(Collections.singletonMap(IFileSystemAccess.DEFAULT_OUTPUT,
                 outConfigProvider.get().getOutputConfigurations().iterator().next()));
-
-        return Lists.newArrayList("rt.prtgen", "rt.cppgen", "rt.jsongen", "rt.rtgen", "rt.devcontainergen");
+        return Lists.newArrayList("rt.prtgen", "rt.cppgen", "rt.rtgen", "rt.devcontainergen");
     }
 
     @Override
     public Object execute(ExecuteCommandParams params, ILanguageServerAccess access, CancelIndicator cancelIndicator) {
         if ("rt.prtgen".equals(params.getCommand())
-                || "rt.cppgen".equals(params.getCommand())
-                || "rt.jsongen".equals(params.getCommand())) {
+                || "rt.cppgen".equals(params.getCommand())) {
             JsonPrimitive uri = (JsonPrimitive) Iterables.getFirst(params.getArguments(), null);
             if (uri != null) {
                 try {
@@ -57,11 +52,7 @@ public class RtCommandService implements IExecutableCommandService {
                             ILanguageServerAccess.Context::getResource).get();
 
                     if("rt.prtgen".equals(params.getCommand())) return executeGeneratePapyrusRTModel(resource);
-                    else if("rt.jsongen".equals(params.getCommand())) return executeGenerateJson(resource);
-                    else if("rt.cppgen".equals(params.getCommand())) {
-                        JsonPrimitive genDevContainer = (JsonPrimitive) Iterables.getLast(params.getArguments(), false);
-                        return executeGenerateCppCode(resource, genDevContainer.getAsBoolean());
-                    }
+                    else if("rt.cppgen".equals(params.getCommand())) return executeGenerateCppCode(resource);
                     else return "Generation Failed";
                 } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
@@ -91,7 +82,7 @@ public class RtCommandService implements IExecutableCommandService {
         return "Generation Failed";
     }
 
-    private String executeGenerateCppCode(Resource resource, boolean genDevContainer) {
+    private String executeGenerateCppCode(Resource resource) {
         RTModel model = (new RTModelGenerator()).doGenerate(resource);
         if(model == null) return "Error generating RTModel";
         if(model.getTop() == null) return "Top capsule not found";
@@ -101,18 +92,6 @@ public class RtCommandService implements IExecutableCommandService {
             return "Generation Successful";
         }
 
-        return "Generation Failed";
-    }
-
-    private String executeGenerateJson(Resource resource) {
-        RTModel model = (new RTModelGenerator()).doGenerate(resource);
-        if(model == null) return "Error generating RTModel";
-
-        String json = new Gson().toJson(model);
-        if(json != null) {
-            fsa.generateFile(resource.getURI().trimFileExtension().lastSegment() + ".json", json);
-            return "Generation Successful";
-        }
         return "Generation Failed";
     }
 

@@ -311,7 +311,7 @@ Trigger:
     'from'
     ports+=[Port] ("," ports+=[Port])*
     'on'
-    signal=[Signal]
+    (signal=[Signal] | any?=ANY | rtBound?='rtBound' | rtUnbound?='rtUnbound')
 ;
 
 TransitionGuard:

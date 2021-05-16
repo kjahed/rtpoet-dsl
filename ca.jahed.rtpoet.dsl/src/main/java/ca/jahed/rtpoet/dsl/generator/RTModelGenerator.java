@@ -1,6 +1,6 @@
 package ca.jahed.rtpoet.dsl.generator;
 
-import ca.jahed.rtpoet.dsl.RTSLibrary;
+import ca.jahed.rtpoet.dsl.libraries.RTSLibrary;
 import ca.jahed.rtpoet.dsl.rt.*;
 import ca.jahed.rtpoet.dsl.rt.Class;
 import ca.jahed.rtpoet.dsl.rt.Enumeration;
@@ -14,11 +14,12 @@ import ca.jahed.rtpoet.rtmodel.cppproperties.RTAttributeProperties;
 import ca.jahed.rtpoet.rtmodel.cppproperties.RTCapsuleProperties;
 import ca.jahed.rtpoet.rtmodel.cppproperties.RTClassProperties;
 import ca.jahed.rtpoet.rtmodel.cppproperties.RTParameterProperties;
+import ca.jahed.rtpoet.rtmodel.rts.RTSystemSignal;
 import ca.jahed.rtpoet.rtmodel.sm.*;
 import ca.jahed.rtpoet.rtmodel.types.RTType;
 import ca.jahed.rtpoet.rtmodel.types.primitivetype.RTBoolean;
-import ca.jahed.rtpoet.rtmodel.types.primitivetype.RTFloat;
 import ca.jahed.rtpoet.rtmodel.types.primitivetype.RTInteger;
+import ca.jahed.rtpoet.rtmodel.types.primitivetype.RTReal;
 import ca.jahed.rtpoet.rtmodel.types.primitivetype.RTString;
 import ca.jahed.rtpoet.rtmodel.values.*;
 import org.eclipse.emf.ecore.EObject;
@@ -278,7 +279,7 @@ public class RTModelGenerator {
             if(pt.getName().equals("String"))
                 return RTString.INSTANCE;
             if(pt.getName().equals("double"))
-                return RTFloat.INSTANCE;
+                return RTReal.INSTANCE;
             if(pt.getName().equals("boolean"))
                 return RTBoolean.INSTANCE;
         }
@@ -364,8 +365,15 @@ public class RTModelGenerator {
     }
 
     private RTTrigger generateTrigger(Trigger trigger) {
-        RTTriggerBuilder builder = RTTrigger.builder((RTSignal) generate(trigger.getSignal()),
-                (RTPort) generate(trigger.getPorts().get(0)));
+        RTPort firstPort = (RTPort) generate(trigger.getPorts().get(0));
+
+        RTSignal signal;
+        if(trigger.isAny()) signal = firstPort.getProtocol().getAnySignal();
+        else if(trigger.isRtBound()) signal = RTSystemSignal.Companion.rtBound();
+        else if(trigger.isRtUnbound()) signal = RTSystemSignal.Companion.rtUnbound();
+        else signal = (RTSignal) generate(trigger.getSignal());
+
+        RTTriggerBuilder builder = RTTrigger.builder(signal, firstPort);
         for (int i = 1; i < trigger.getPorts().size(); i++)
             builder.port((RTPort) generate(trigger.getPorts().get(i)));
         return builder.build();

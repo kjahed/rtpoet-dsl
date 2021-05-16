@@ -1,6 +1,6 @@
 package ca.jahed.rtpoet.dsl.scoping;
 
-import ca.jahed.rtpoet.dsl.RTSLibrary;
+import ca.jahed.rtpoet.dsl.libraries.RTSLibrary;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.scoping.impl.ImportUriGlobalScopeProvider;
