@@ -3,6 +3,7 @@ package ca.jahed.rtpoet.dsl.ide;
 import ca.jahed.rtpoet.dsl.generator.PapyrusRTModelGenerator;
 import ca.jahed.rtpoet.dsl.generator.RTModelGenerator;
 import ca.jahed.rtpoet.dsl.ide.generator.DevContainerGenerator;
+import ca.jahed.rtpoet.js.generators.RTJavaScriptCodeGenerator;
 import ca.jahed.rtpoet.generators.RTTextualModelGenerator;
 import ca.jahed.rtpoet.papyrusrt.PapyrusRTReader;
 import ca.jahed.rtpoet.papyrusrt.generators.CppCodeGenerator;
@@ -38,13 +39,14 @@ public class RtCommandService implements IExecutableCommandService {
         fsa = fsaProvider.get();
         fsa.setOutputConfigurations(Collections.singletonMap(IFileSystemAccess.DEFAULT_OUTPUT,
                 outConfigProvider.get().getOutputConfigurations().iterator().next()));
-        return Lists.newArrayList("rt.prtgen", "rt.cppgen", "rt.rtgen", "rt.devcontainergen");
+        return Lists.newArrayList("rt.prtgen", "rt.cppgen", "rt.jsgen", "rt.rtgen", "rt.devcontainergen");
     }
 
     @Override
     public Object execute(ExecuteCommandParams params, ILanguageServerAccess access, CancelIndicator cancelIndicator) {
         if ("rt.prtgen".equals(params.getCommand())
-                || "rt.cppgen".equals(params.getCommand())) {
+                || "rt.cppgen".equals(params.getCommand())
+                || "rt.jsgen".equals(params.getCommand())) {
             JsonPrimitive uri = (JsonPrimitive) Iterables.getFirst(params.getArguments(), null);
             if (uri != null) {
                 try {
@@ -53,6 +55,10 @@ public class RtCommandService implements IExecutableCommandService {
 
                     if("rt.prtgen".equals(params.getCommand())) return executeGeneratePapyrusRTModel(resource);
                     else if("rt.cppgen".equals(params.getCommand())) return executeGenerateCppCode(resource);
+                    else if("rt.jsgen".equals(params.getCommand())) {
+                        JsonPrimitive inspector = (JsonPrimitive) Iterables.getLast(params.getArguments(), false);
+                        return executeGenerateJsCode(resource, inspector.getAsBoolean());
+                    }
                     else return "Generation Failed";
                 } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
@@ -89,6 +95,19 @@ public class RtCommandService implements IExecutableCommandService {
 
         if(CppCodeGenerator.generate(model, fsa.getOutputConfigurations()
                 .get(IFileSystemAccess.DEFAULT_OUTPUT).getOutputDirectory())) {
+            return "Generation Successful";
+        }
+
+        return "Generation Failed";
+    }
+
+    private String executeGenerateJsCode(Resource resource, boolean inspector) {
+        RTModel model = (new RTModelGenerator()).doGenerate(resource);
+        if(model == null) return "Error generating RTModel";
+        if(model.getTop() == null) return "Top capsule not found";
+
+        if(RTJavaScriptCodeGenerator.generate(model, fsa.getOutputConfigurations()
+                .get(IFileSystemAccess.DEFAULT_OUTPUT).getOutputDirectory(), inspector)) {
             return "Generation Successful";
         }
 

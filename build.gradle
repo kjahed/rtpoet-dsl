@@ -28,6 +28,7 @@ subprojects {
 
 		implementation 'ca.jahed.rtpoet:rtpoet:1.0-SNAPSHOT'
 		implementation 'ca.jahed.rtpoet:rtpoet-papyrusrt:1.0-SNAPSHOT'
+		implementation 'ca.jahed.rtpoet:rtpoet-js:1.0-SNAPSHOT'
 	}
 
 	apply plugin: 'org.xtext.xtend'
@@ -35,7 +36,7 @@ subprojects {
 	apply plugin: 'eclipse'
 	
 	group = 'ca.jahed.rtpoet.dsl'
-	version = '1.0.5'
+	version = '1.0.6'
 	
 	sourceCompatibility = '1.8'
 	targetCompatibility = '1.8'
