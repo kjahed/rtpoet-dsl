@@ -218,6 +218,7 @@ public class RTModelGenerator {
             if(port.getKind().equals("internal")) builder.internal();
             else if(port.getKind().equals("sap")) builder.sap();
             else if(port.getKind().equals("spp")) builder.spp();
+            else if(port.getKind().equals("relay")) builder.relay();
             else builder.external();
         }
 
