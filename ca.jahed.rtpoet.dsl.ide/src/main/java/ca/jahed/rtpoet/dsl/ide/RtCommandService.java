@@ -128,6 +128,7 @@ public class RtCommandService implements IExecutableCommandService {
     }
 
     private String executeGenerateDevContainer() {
+        fsa.generateFile(".devcontainer", "");
         fsa.generateFile(".." + File.separator + ".devcontainer" + File.separator + "devcontainer.json",
                 DevContainerGenerator.generate());
         return "Generation Successful";

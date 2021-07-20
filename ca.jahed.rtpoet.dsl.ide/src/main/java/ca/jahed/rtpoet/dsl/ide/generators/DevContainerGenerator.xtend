@@ -4,7 +4,7 @@ class DevContainerGenerator {
 
 	def static generate() {'''
      {
-        "name": "C++ for UML-RT",
+        "name": "UML-RT Development",
         "image": "kjahed/vscode-rtpoetdev:latest",
         "remoteUser": "vscode",
         "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
