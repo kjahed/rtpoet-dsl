@@ -93,8 +93,7 @@ public class RtCommandService implements IExecutableCommandService {
         if(model == null) return "Error generating RTModel";
         if(model.getTop() == null) return "Top capsule not found";
 
-        if(CppCodeGenerator.generate(model, fsa.getOutputConfigurations()
-                .get(IFileSystemAccess.DEFAULT_OUTPUT).getOutputDirectory())) {
+        if(CppCodeGenerator.generate(model, "./src-gen")) {
             return "Generation Successful";
         }
 
@@ -106,8 +105,7 @@ public class RtCommandService implements IExecutableCommandService {
         if(model == null) return "Error generating RTModel";
         if(model.getTop() == null) return "Top capsule not found";
 
-        if(RTJavaScriptCodeGenerator.generate(model, fsa.getOutputConfigurations()
-                .get(IFileSystemAccess.DEFAULT_OUTPUT).getOutputDirectory(), inspector)) {
+        if(RTJavaScriptCodeGenerator.generate(model, "./src-gen", inspector)) {
             return "Generation Successful";
         }
 
@@ -128,8 +126,7 @@ public class RtCommandService implements IExecutableCommandService {
     }
 
     private String executeGenerateDevContainer() {
-        fsa.generateFile(".devcontainer", "");
-        fsa.generateFile(".." + File.separator + ".devcontainer" + File.separator + "devcontainer.json",
+        fsa.generateFile(".devcontainer" + File.separator + "devcontainer.json",
                 DevContainerGenerator.generate());
         return "Generation Successful";
     }
