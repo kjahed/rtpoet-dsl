@@ -1,3 +1,8 @@
+plugins {
+	id 'java-library'
+	id 'maven-publish'
+}
+
 dependencies {
 	compile "org.eclipse.xtext:org.eclipse.xtext:${xtextVersion}"
 	compile "org.eclipse.xtext:org.eclipse.xtext.xbase:${xtextVersion}"
@@ -29,3 +34,55 @@ task generateXtextLanguage(type: JavaExec) {
 generateXtext.dependsOn(generateXtextLanguage)
 clean.dependsOn(cleanGenerateXtextLanguage)
 eclipse.classpath.plusConfigurations += [configurations.mwe2]
+
+publishing {
+	repositories {
+		mavenLocal()
+		maven {
+			name = "GitHubPackages"
+			url = uri("https://maven.pkg.github.com/kjahed/rtpoet")
+			credentials {
+				username = project.findProperty("gpr.user") ?: System.getenv("GH_USER")
+				password = project.findProperty("gpr.key") ?: System.getenv("GH_TOKEN")
+			}
+		}
+	}
+
+	publications {
+		mvn(MavenPublication) {
+			from components.java
+			artifactId = rootProject.name
+			versionMapping {
+				usage('java-api') {
+					fromResolutionOf('runtimeClasspath')
+				}
+				usage('java-runtime') {
+					fromResolutionResult()
+				}
+			}
+			pom {
+				name = 'RTPoet DSL'
+				description = 'Xtext DSL for RTPoet'
+				url = 'https://github.com/kjahed/rtpoet-dsl'
+				licenses {
+					license {
+						name = 'The Apache License, Version 2.0'
+						url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+					}
+				}
+				developers {
+					developer {
+						id = 'kjahed'
+						name = 'Karim Jahed'
+						email = 'jahed@cs.queensu.ca'
+					}
+				}
+				scm {
+					connection = 'scm:git:git://github.com/kjahed/rtpoet-dsl.git'
+					developerConnection = 'scm:git:ssh://github.com/kjahed/rtpoet-dsl.git'
+					url = 'https://github.com/kjahed/rtpoet-dsl/'
+				}
+			}
+		}
+	}
+}
