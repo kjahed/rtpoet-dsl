@@ -36,7 +36,7 @@ subprojects {
 	apply plugin: 'eclipse'
 	
 	group = 'ca.jahed.rtpoet.dsl'
-	version = '1.0.6'
+	version = '1.0.8'
 	
 	sourceCompatibility = '1.8'
 	targetCompatibility = '1.8'
