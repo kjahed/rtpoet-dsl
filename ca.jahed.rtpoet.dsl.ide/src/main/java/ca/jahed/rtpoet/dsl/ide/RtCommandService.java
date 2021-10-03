@@ -36,11 +36,15 @@ public class RtCommandService implements IExecutableCommandService {
 
     private JavaIoFileSystemAccess fsa;
 
+    private File outputDir;
+
     @Override
     public List<String> initialize() {
         fsa = fsaProvider.get();
         fsa.setOutputConfigurations(Collections.singletonMap(IFileSystemAccess.DEFAULT_OUTPUT,
                 outConfigProvider.get().getOutputConfigurations().iterator().next()));
+        outputDir = new File(fsa.getOutputConfigurations()
+                .get(IFileSystemAccess.DEFAULT_OUTPUT).getOutputDirectory());
 
         return Lists.newArrayList(
                 "rt.prtgen",
@@ -100,9 +104,9 @@ public class RtCommandService implements IExecutableCommandService {
         Map<String, Object> result = new HashMap<>();
         result.put("error", false);
 
-        if(new PapyrusRTModelGenerator().doGenerate(resource, fsa)) {
-            String path = fsa.getURI(resource.getURI()
-                    .trimFileExtension().lastSegment()+ ".uml").toString().substring(5);
+        Resource prtResource = new PapyrusRTModelGenerator().doGenerate(resource, outputDir, fsa);
+        if(prtResource != null) {
+            String path = prtResource.getURI().toString().substring(5);
             result.put("path", path);
             result.put("message", "Generation Successful");
         } else {
@@ -130,9 +134,9 @@ public class RtCommandService implements IExecutableCommandService {
             return result;
         }
 
-        if(CppCodeGenerator.generate(model, "./src-gen")) {
-            String path = new File(new File(new File("src-gen"),
-                    model.getName() + ".cpp"), "src").getAbsolutePath();
+        File codeDir = new File(outputDir, model.getName() + ".cpp");
+        if(CppCodeGenerator.generate(model, codeDir.getAbsolutePath())) {
+            String path = new File(codeDir, "src").getAbsolutePath();
             result.put("path", path);
             result.put("message", "Generation Successful");
         }
@@ -161,8 +165,9 @@ public class RtCommandService implements IExecutableCommandService {
             return result;
         }
 
-        if(RTJavaScriptCodeGenerator.generate(model, "./src-gen", inspector)) {
-            String path = new File(new File("src-gen"), model.getName() + ".js").getAbsolutePath();
+        File codeDir = new File(outputDir, model.getName() + ".js");
+        if(RTJavaScriptCodeGenerator.generate(model, codeDir, inspector)) {
+            String path = codeDir.getAbsolutePath();
             result.put("path", path);
             result.put("message", "Generation Successful");
         } else {
@@ -180,15 +185,16 @@ public class RtCommandService implements IExecutableCommandService {
         try {
             RTModel model = PapyrusRTReader.read(umlFile.getAbsolutePath());
             String textualModel = RTTextualModelGenerator.generate(model);
-            fsa.generateFile(umlFile.getName().substring(0, umlFile.getName()
-                    .lastIndexOf(".") + 1) + "rt", textualModel);
 
-            String path = new File(umlFile.getName().substring(0, umlFile.getName()
-                    .lastIndexOf(".") + 1) + "rt").getAbsolutePath();
+            String fileName = umlFile.getName().substring(0, umlFile.getName().lastIndexOf(".") + 1) + "rt";
+            fsa.generateFile(model.getName() + File.separator + fileName, textualModel);
+
+            String path = new File(new File(outputDir, model.getName()), fileName).getAbsolutePath();
             result.put("path", path);
             result.put("message", "Generation Successful");
 
         } catch (Exception e) {
+            e.printStackTrace();
             result.put("error", true);
             result.put("message", "Generation Failed");
         }
@@ -200,10 +206,10 @@ public class RtCommandService implements IExecutableCommandService {
         Map<String, Object> result = new HashMap<>();
         result.put("error", false);
 
-        fsa.generateFile(".devcontainer" + File.separator + "devcontainer.json",
-                DevContainerGenerator.generate());
+        String filePath = "../.devcontainer" + File.separator + "devcontainer.json";
+        fsa.generateFile(filePath, DevContainerGenerator.generate());
 
-        String path = new File(".devcontainer" + File.separator + "devcontainer.json").getAbsolutePath();
+        String path = new File(filePath).getAbsolutePath();
         result.put("path", path);
         result.put("message", "Generation Successful");
         return result;

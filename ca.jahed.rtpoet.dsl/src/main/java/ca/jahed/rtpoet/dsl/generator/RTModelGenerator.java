@@ -22,16 +22,20 @@ import ca.jahed.rtpoet.rtmodel.types.primitivetype.RTInteger;
 import ca.jahed.rtpoet.rtmodel.types.primitivetype.RTReal;
 import ca.jahed.rtpoet.rtmodel.types.primitivetype.RTString;
 import ca.jahed.rtpoet.rtmodel.values.*;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
 
 import java.util.*;
 
 public class RTModelGenerator {
     private final Map<EObject, RTElement> cache = new HashMap<>();
+    private ResourceSet resourceSet;
 
     public RTModel doGenerate(Resource input) {
-        RTSLibrary.load(input.getResourceSet());
+        resourceSet = input.getResourceSet();
+        RTSLibrary.load(resourceSet);
         cache.putAll(RTSLibrary.getRtsClasses());
         cache.putAll(RTSLibrary.getRtsProtocols());
         cache.putAll(RTSLibrary.getRtsSignals());
@@ -101,6 +105,13 @@ public class RTModelGenerator {
         model.getEnumerations().forEach(enumeration -> builder.enumeration((RTEnumeration) generate(enumeration)));
         model.getArtifacts().forEach(artifact -> builder.artifact((RTArtifact) generate(artifact)));
         model.getProtocols().forEach(protocol -> builder.protocol((RTProtocol) generate(protocol)));
+
+        model.getImports().forEach(anImport -> {
+            URI importUri = model.eResource().getURI().trimSegments(1).appendSegment(anImport.getImportURI());
+            Resource importedResource = resourceSet.getResource(importUri, true);
+            builder.imprt(doGenerate(importedResource));
+        });
+
         return builder.build();
     }
 

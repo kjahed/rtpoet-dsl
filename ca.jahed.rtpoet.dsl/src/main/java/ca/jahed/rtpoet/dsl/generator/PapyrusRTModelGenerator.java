@@ -1,54 +1,48 @@
 package ca.jahed.rtpoet.dsl.generator;
 
 import ca.jahed.rtpoet.papyrusrt.PapyrusRTWriter;
-import ca.jahed.rtpoet.papyrusrt.rts.PapyrusRTLibrary;
 import ca.jahed.rtpoet.rtmodel.*;
 import ca.jahed.rtpoet.utils.RTModelValidator;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.generator.IFileSystemAccess2;
 
-import java.io.IOException;
+import java.io.File;
 
 public class PapyrusRTModelGenerator {
-    public boolean doGenerate(Resource input, IFileSystemAccess2 fsa) {
+
+    public Resource doGenerate(Resource input, File outputDir, IFileSystemAccess2 fsa) {
         String outputFileName = input.getURI().trimFileExtension().lastSegment();
-        Resource umlResource = PapyrusRTLibrary.INSTANCE.createResourceSet()
-                .createResource(fsa.getURI(outputFileName+ ".uml"));
-        try {
-            umlResource.delete(null);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        outputDir = new File(outputDir, outputFileName);
+
+        if(outputDir.exists())
+            outputDir.delete();
+        outputDir.mkdirs();
+
+        File errorFile = new File(outputDir, outputFileName + ".errors");
+        File warningFile = new File(outputDir, outputFileName + ".warning");
 
         RTModel rtModel;
         try {
             rtModel = new RTModelGenerator().doGenerate(input);
         } catch (Exception e) {
-            fsa.generateFile(outputFileName + ".errors", e.getMessage());
-            return false;
+            fsa.generateFile(errorFile.getAbsolutePath(), e.getMessage());
+            return null;
         }
 
-        if(rtModel != null) {
-            RTModelValidator validator = new RTModelValidator(rtModel, false);
-            validator.validate(false);
+        RTModelValidator validator = new RTModelValidator(rtModel, false);
+        validator.validate(false);
 
-            try {
-                PapyrusRTWriter.write(umlResource, rtModel);
-                umlResource.save(null);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        Resource resource = PapyrusRTWriter.writeAll(outputDir.getAbsolutePath(), rtModel);
 
-            if(validator.hasErrors()) {
-                fsa.generateFile(outputFileName + ".errors",
-                        String.join("\n", validator.getErrors()));
-            }
-
-            if(validator.hasWarnings())
-                fsa.generateFile(outputFileName + ".warnings",
-                        String.join("\n", validator.getWarnings()));
+        if(validator.hasErrors()) {
+            fsa.generateFile(errorFile.getAbsolutePath(),
+                    String.join("\n", validator.getErrors()));
         }
 
-        return true;
+        if(validator.hasWarnings())
+            fsa.generateFile(warningFile.getAbsolutePath(),
+                    String.join("\n", validator.getWarnings()));
+
+        return resource;
     }
 }
