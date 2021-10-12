@@ -32,7 +32,7 @@ class DevContainerGenerator {
 
         "extensions": [
             "ms-vscode.cpptools",
-            "kjahed.rtpoet-vscode-extension"
+            "jahed.rtpoet-vscode-extension"
         ]
 
         // Use 'forwardPorts' to make a list of ports inside the container available locally.

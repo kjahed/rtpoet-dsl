@@ -36,14 +36,14 @@ public class RtCommandService implements IExecutableCommandService {
 
     private JavaIoFileSystemAccess fsa;
 
-    private File outputDir;
+    private File srcGenDir;
 
     @Override
     public List<String> initialize() {
         fsa = fsaProvider.get();
         fsa.setOutputConfigurations(Collections.singletonMap(IFileSystemAccess.DEFAULT_OUTPUT,
                 outConfigProvider.get().getOutputConfigurations().iterator().next()));
-        outputDir = new File(fsa.getOutputConfigurations()
+        srcGenDir = new File(fsa.getOutputConfigurations()
                 .get(IFileSystemAccess.DEFAULT_OUTPUT).getOutputDirectory());
 
         return Lists.newArrayList(
@@ -104,7 +104,7 @@ public class RtCommandService implements IExecutableCommandService {
         Map<String, Object> result = new HashMap<>();
         result.put("error", false);
 
-        Resource prtResource = new PapyrusRTModelGenerator().doGenerate(resource, outputDir, fsa);
+        Resource prtResource = new PapyrusRTModelGenerator().doGenerate(resource, srcGenDir, fsa);
         if(prtResource != null) {
             String path = prtResource.getURI().toString().substring(5);
             result.put("path", path);
@@ -134,7 +134,7 @@ public class RtCommandService implements IExecutableCommandService {
             return result;
         }
 
-        File codeDir = new File(outputDir, model.getName() + ".cpp");
+        File codeDir = new File(srcGenDir, resource.getURI().trimFileExtension().lastSegment() + ".cpp");
         if(CppCodeGenerator.generate(model, codeDir.getAbsolutePath())) {
             String path = new File(codeDir, "src").getAbsolutePath();
             result.put("path", path);
@@ -165,7 +165,7 @@ public class RtCommandService implements IExecutableCommandService {
             return result;
         }
 
-        File codeDir = new File(outputDir, model.getName() + ".js");
+        File codeDir = new File(srcGenDir, resource.getURI().trimFileExtension().lastSegment() + ".js");
         if(RTJavaScriptCodeGenerator.generate(model, codeDir, inspector)) {
             String path = codeDir.getAbsolutePath();
             result.put("path", path);
@@ -184,12 +184,9 @@ public class RtCommandService implements IExecutableCommandService {
 
         try {
             RTModel model = PapyrusRTReader.read(umlFile.getAbsolutePath());
-            String textualModel = RTTextualModelGenerator.generate(model);
-
-            String fileName = umlFile.getName().substring(0, umlFile.getName().lastIndexOf(".") + 1) + "rt";
-            fsa.generateFile(model.getName() + File.separator + fileName, textualModel);
-
-            String path = new File(new File(outputDir, model.getName()), fileName).getAbsolutePath();
+            File outputDir = new File(srcGenDir, umlFile.getName());
+            RTTextualModelGenerator.generate(model, outputDir.getAbsolutePath());
+            String path = new File(outputDir, model.getName() + ".rt").getAbsolutePath();
             result.put("path", path);
             result.put("message", "Generation Successful");
 
