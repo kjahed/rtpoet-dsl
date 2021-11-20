@@ -107,7 +107,8 @@ public class RTModelGenerator {
         model.getProtocols().forEach(protocol -> builder.protocol((RTProtocol) generate(protocol)));
 
         model.getImports().forEach(anImport -> {
-            URI importUri = model.eResource().getURI().trimSegments(1).appendSegment(anImport.getImportURI());
+            URI importUri = model.eResource().getURI().trimSegments(1)
+                    .appendSegments(URI.createURI(anImport.getImportURI()).segments());
             Resource importedResource = resourceSet.getResource(importUri, true);
             builder.imprt(doGenerate(importedResource));
         });

@@ -203,10 +203,11 @@ public class RtCommandService implements IExecutableCommandService {
         Map<String, Object> result = new HashMap<>();
         result.put("error", false);
 
-        String filePath = "../.devcontainer" + File.separator + "devcontainer.json";
-        fsa.generateFile(filePath, DevContainerGenerator.generate());
+        File outputDir = new File(srcGenDir.getParentFile(), ".devcontainer");
+        File devContainerFile = new File(outputDir, "devcontainer.json");
+        fsa.generateFile(devContainerFile.getAbsolutePath(), DevContainerGenerator.generate());
 
-        String path = new File(filePath).getAbsolutePath();
+        String path = devContainerFile.getAbsolutePath();
         result.put("path", path);
         result.put("message", "Generation Successful");
         return result;
