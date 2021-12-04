@@ -32,6 +32,7 @@ class DevContainerGenerator {
 
         "extensions": [
             "ms-vscode.cpptools",
+            "jebbs.plantuml",
             "jahed.rtpoet-vscode-extension"
         ]
 

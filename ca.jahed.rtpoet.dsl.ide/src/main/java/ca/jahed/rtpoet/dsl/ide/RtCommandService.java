@@ -5,6 +5,7 @@ import ca.jahed.rtpoet.dsl.generator.RTModelGenerator;
 import ca.jahed.rtpoet.dsl.ide.generator.DevContainerGenerator;
 import ca.jahed.rtpoet.js.generators.RTJavaScriptCodeGenerator;
 import ca.jahed.rtpoet.generators.RTTextualModelGenerator;
+import ca.jahed.rtpoet.js.generators.RTPlantUMLDiagramGenerator;
 import ca.jahed.rtpoet.papyrusrt.PapyrusRTReader;
 import ca.jahed.rtpoet.papyrusrt.generators.CppCodeGenerator;
 import ca.jahed.rtpoet.rtmodel.RTModel;
@@ -51,6 +52,7 @@ public class RtCommandService implements IExecutableCommandService {
                 "rt.cppgen",
                 "rt.jsgen",
                 "rt.rtgen",
+                "rt.plantumlgen",
                 "rt.devcontainergen"
         );
     }
@@ -63,7 +65,8 @@ public class RtCommandService implements IExecutableCommandService {
         if ("rt.prtgen".equals(params.getCommand())
                 || "rt.cppgen".equals(params.getCommand())
                 || "rt.jsgen".equals(params.getCommand())
-                || "rt.rtgen".equals(params.getCommand())) {
+                || "rt.rtgen".equals(params.getCommand())
+                || "rt.plantumlgen".equals(params.getCommand())) {
 
             JsonPrimitive uri = (JsonPrimitive) Iterables.getFirst(params.getArguments(), null);
 
@@ -77,6 +80,7 @@ public class RtCommandService implements IExecutableCommandService {
 
                     if("rt.prtgen".equals(params.getCommand())) return executeGeneratePapyrusRTModel(resource);
                     else if("rt.cppgen".equals(params.getCommand())) return executeGenerateCppCode(resource);
+                    else if("rt.plantumlgen".equals(params.getCommand())) return executeGeneratePlantUMLDiagrams(resource);
                     else if("rt.jsgen".equals(params.getCommand())) {
                         JsonPrimitive inspector = (JsonPrimitive) Iterables.getLast(params.getArguments(), false);
                         return executeGenerateJsCode(resource, inspector.getAsBoolean());
@@ -168,6 +172,36 @@ public class RtCommandService implements IExecutableCommandService {
         File codeDir = new File(srcGenDir, resource.getURI().trimFileExtension().lastSegment() + ".js");
         if(RTJavaScriptCodeGenerator.generate(model, codeDir, inspector)) {
             String path = codeDir.getAbsolutePath();
+            result.put("path", path);
+            result.put("message", "Generation Successful");
+        } else {
+            result.put("error", true);
+            result.put("message", "Generation Failed");
+        }
+
+        return result;
+    }
+
+    private Object executeGeneratePlantUMLDiagrams(Resource resource) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("error", false);
+
+        RTModel model = (new RTModelGenerator()).doGenerate(resource);
+        if(model == null) {
+            result.put("error", true);
+            result.put("message", "Error generating RTModel");
+            return result;
+        }
+
+        if(model.getTop() == null) {
+            result.put("error", true);
+            result.put("message", "Top capsule not found");
+            return result;
+        }
+
+        File codeDir = new File(srcGenDir, resource.getURI().trimFileExtension().lastSegment() + ".di");
+        if(RTPlantUMLDiagramGenerator.generate(model, codeDir)) {
+            String path = new File(codeDir, "class.puml").getAbsolutePath();
             result.put("path", path);
             result.put("message", "Generation Successful");
         } else {
