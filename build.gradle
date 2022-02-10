@@ -14,7 +14,7 @@ subprojects {
 
 		maven {
 			name = "GitHubPackages"
-			url = uri("https://maven.pkg.github.com/kjahed/rtpoet")
+			url = uri("https://maven.pkg.github.com/qumase/rtpoet")
 			credentials {
 				username = project.findProperty("gpr.user") ?: System.getenv("GH_USER")
 				password = project.findProperty("gpr.key") ?: System.getenv("GH_TOKEN")

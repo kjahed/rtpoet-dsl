@@ -40,7 +40,7 @@ publishing {
 		mavenLocal()
 		maven {
 			name = "GitHubPackages"
-			url = uri("https://maven.pkg.github.com/kjahed/rtpoet")
+			url = uri("https://maven.pkg.github.com/qumase/rtpoet")
 			credentials {
 				username = project.findProperty("gpr.user") ?: System.getenv("GH_USER")
 				password = project.findProperty("gpr.key") ?: System.getenv("GH_TOKEN")
@@ -51,7 +51,8 @@ publishing {
 	publications {
 		mvn(MavenPublication) {
 			from components.java
-			artifactId = rootProject.name
+			groupId = "ca.jahed.rtpoet"
+			artifactId = "rtpoet-dsl"
 			versionMapping {
 				usage('java-api') {
 					fromResolutionOf('runtimeClasspath')
@@ -63,7 +64,7 @@ publishing {
 			pom {
 				name = 'RTPoet DSL'
 				description = 'Xtext DSL for RTPoet'
-				url = 'https://github.com/kjahed/rtpoet-dsl'
+				url = 'https://github.com/qumase/rtpoet-dsl'
 				licenses {
 					license {
 						name = 'The Apache License, Version 2.0'
@@ -78,9 +79,9 @@ publishing {
 					}
 				}
 				scm {
-					connection = 'scm:git:git://github.com/kjahed/rtpoet-dsl.git'
-					developerConnection = 'scm:git:ssh://github.com/kjahed/rtpoet-dsl.git'
-					url = 'https://github.com/kjahed/rtpoet-dsl/'
+					connection = 'scm:git:git://github.com/qumase/rtpoet-dsl.git'
+					developerConnection = 'scm:git:ssh://github.com/qumase/rtpoet-dsl.git'
+					url = 'https://github.com/qumase/rtpoet-dsl/'
 				}
 			}
 		}
