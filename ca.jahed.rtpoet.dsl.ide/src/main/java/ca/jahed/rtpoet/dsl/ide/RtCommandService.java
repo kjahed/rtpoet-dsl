@@ -1,7 +1,5 @@
 package ca.jahed.rtpoet.dsl.ide;
 
-import ca.jahed.kubert.Kubert;
-import ca.jahed.kubert.KubertConfiguration;
 import ca.jahed.rtpoet.dsl.generator.PapyrusRTModelGenerator;
 import ca.jahed.rtpoet.dsl.generator.RTModelGenerator;
 import ca.jahed.rtpoet.dsl.ide.generator.DevContainerGenerator;
@@ -55,8 +53,7 @@ public class RtCommandService implements IExecutableCommandService {
                 "rt.jsgen",
                 "rt.rtgen",
                 "rt.plantumlgen",
-                "rt.devcontainergen",
-                "rt.kubert"
+                "rt.devcontainergen"
         );
     }
 
@@ -69,8 +66,7 @@ public class RtCommandService implements IExecutableCommandService {
                 || "rt.cppgen".equals(params.getCommand())
                 || "rt.jsgen".equals(params.getCommand())
                 || "rt.rtgen".equals(params.getCommand())
-                || "rt.plantumlgen".equals(params.getCommand())
-                || "rt.kubert".equals(params.getCommand())) {
+                || "rt.plantumlgen".equals(params.getCommand())) {
 
             JsonPrimitive uri = (JsonPrimitive) Iterables.getFirst(params.getArguments(), null);
 
@@ -88,15 +84,6 @@ public class RtCommandService implements IExecutableCommandService {
                     else if("rt.jsgen".equals(params.getCommand())) {
                         JsonPrimitive inspector = (JsonPrimitive) Iterables.getLast(params.getArguments(), false);
                         return executeGenerateJsCode(resource, inspector.getAsBoolean());
-                    }
-                    else if("rt.kubert".equals(params.getCommand())) {
-                        String namespace = ((JsonPrimitive) params.getArguments().get(1)).getAsString();
-                        String appName = ((JsonPrimitive) params.getArguments().get(2)).getAsString();
-                        String dockerRepo = ((JsonPrimitive) params.getArguments().get(3)).getAsString();
-                        String umlrtArgs = ((JsonPrimitive) params.getArguments().get(4)).getAsString();
-                        boolean debug = ((JsonPrimitive) params.getArguments().get(5)).getAsBoolean();
-                        return executeGenerateKubert(resource, namespace, appName, dockerRepo, umlrtArgs, debug);
-
                     }
                 } catch (InterruptedException | ExecutionException e) {
                     result.put("error", true);
@@ -116,7 +103,6 @@ public class RtCommandService implements IExecutableCommandService {
         result.put("message", "Bad Command");
         return result;
     }
-
 
     private Object executeGeneratePapyrusRTModel(Resource resource) {
         Map<String, Object> result = new HashMap<>();
@@ -238,35 +224,6 @@ public class RtCommandService implements IExecutableCommandService {
             result.put("path", path);
             result.put("message", "Generation Successful");
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            result.put("error", true);
-            result.put("message", "Generation Failed");
-        }
-
-        return result;
-    }
-
-    private Object executeGenerateKubert(Resource resource, String namespace, String appName,
-                                         String dockerRepo, String umlrtArgs, boolean debug) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("error", false);
-
-        RTModel model = (new RTModelGenerator()).doGenerate(resource);
-        File outputDir = new File(srcGenDir, resource.getURI().trimFileExtension().lastSegment() + ".kube");
-
-        KubertConfiguration config = new KubertConfiguration();
-        config.setOutputDir(outputDir);
-        config.setNamespace(namespace);
-        config.setAppName(appName);
-        config.setDockerRepo(dockerRepo);
-        config.setUmlrtArgs(umlrtArgs);
-        config.setDebug(debug);
-
-        try {
-            new Kubert().generate(model, config);
-            result.put("path", outputDir.getAbsolutePath());
-            result.put("message", "Generation Successful");
         } catch (Exception e) {
             e.printStackTrace();
             result.put("error", true);
