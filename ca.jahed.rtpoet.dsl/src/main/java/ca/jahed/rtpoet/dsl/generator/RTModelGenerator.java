@@ -232,7 +232,7 @@ public class RTModelGenerator {
             else if(port.getKind().equals("spp")) builder.spp();
             else if(port.getKind().equals("relay")) builder.relay();
             else builder.external();
-        }
+        } else builder.external();
 
         if(port.getRegistration() != null) {
             if(port.getRegistration().equals("app")) builder.appRegistration();
